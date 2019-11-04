@@ -102,7 +102,7 @@ class PPO:
         self.optimizer = torch.optim.Adam(self.policy.parameters(), lr=lr, betas=betas)
         
         self.policy_old = ActorCritic(observation_dim, action_dim, action_std).to(device)
-        self.policy_old.load_observation_dict(self.policy.observation_dict())
+        self.policy_old.load_state_dict(self.policy.state_dict())
         
         self.MseLoss = nn.MSELoss()
     
@@ -149,7 +149,7 @@ class PPO:
             self.optimizer.step()
             
         # Copy new weights into old policy:
-        self.policy_old.load_observation_dict(self.policy.observation_dict())
+        self.policy_old.load_state_dict(self.policy.state_dict())
         
 def main():
     ############## Hyperparameters ##############
@@ -221,12 +221,12 @@ def main():
         # stop training if avg_reward > solved_reward
         if running_reward > (log_interval*solved_reward):
             print("########## Solved! ##########")
-            torch.save(ppo.policy.observation_dict(), './PPO_continuous_solved_{}.pth'.format(env_name))
+            torch.save(ppo.policy.state_dict(), './PPO_continuous_solved_{}.pth'.format(env_name))
             break
         
         # save every 500 episodes
         if i_episode % 500 == 0:
-            torch.save(ppo.policy.observation_dict(), './PPO_continuous_{}.pth'.format(env_name))
+            torch.save(ppo.policy.state_dict(), './PPO_continuous_{}.pth'.format(env_name))
             
         # logging
         if i_episode % log_interval == 0:
