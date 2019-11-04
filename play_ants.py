@@ -23,7 +23,7 @@ for i in range(Nsim):
     # optimal strategy
     pull_threshold = np.pi/2.1
     pullProb = 1 - np.logical_or(env.theta < pull_threshold, env.theta > (np.pi*2-pull_threshold))*1
-    print(pullProb)
+    # print(pullProb)
     position, velocity = env.state
     pullDir = - position[2] - env.theta
     larger = angle_normalize(pullDir) > env.dphi/2
