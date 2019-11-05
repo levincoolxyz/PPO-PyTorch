@@ -24,16 +24,16 @@ class Memory:
 class ActorCritic(nn.Module):
     def __init__(self, observation_dim, action_dim, action_std):
         super(ActorCritic, self).__init__()
-        # action mean range -1 to 1
-        self.actor =  nn.Sequential(
-                nn.Linear(observation_dim, 64),
+        # action mean range -1 to 1 (network of an *individual* ant 1 input 2 outputs)
+        self.ant =  nn.Sequential(
+                nn.Linear(1, 64),
                 nn.Tanh(),
                 nn.Linear(64, 32),
                 nn.Tanh(),
-                nn.Linear(32, action_dim),
+                nn.Linear(32, 2),
                 nn.Tanh()
                 )
-        
+
         # critic
         self.critic = nn.Sequential(
                 nn.Linear(observation_dim, 64),
@@ -48,6 +48,10 @@ class ActorCritic(nn.Module):
     def forward(self):
         raise NotImplementedError
     
+    def actor(self, observations):
+        out = [self.ant(observations[:,i:i+1]) for i in range(list(observations.size())[1])]
+        return torch.cat(out,dim=1)
+
     def act(self, observations, memory):
         action_mean = self.actor(observations)
         cov_mat = torch.diag(self.action_var).to(device)
@@ -155,7 +159,8 @@ def main():
     lr = 0.0003                 # parameters for Adam optimizer
     betas = (0.9, 0.999)
     
-    random_seed = None
+    # random_seed = None
+    random_seed = 1
     #############################################
     
     # creating environment
@@ -190,7 +195,7 @@ def main():
             # Saving reward and is_terminals:
             memory.rewards.append(reward)
             memory.is_terminals.append(done)
-            
+
             # update if its time
             if time_step % update_timestep == 0:
                 ppo.update(memory)

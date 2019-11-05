@@ -37,10 +37,10 @@ def test():
     
     for ep in range(1, n_episodes+1):
         ep_reward = 0
-        state = env.reset()
+        observation = env.reset()
         for t in range(max_timesteps):
-            action = ppo.select_action(state, memory)
-            state, reward, done, _ = env.step(action)
+            action = ppo.select_action(observation, memory)
+            observation, reward, done, _ = env.step(action)
             ep_reward += reward
             if render:
                 env.render()

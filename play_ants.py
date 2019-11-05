@@ -9,9 +9,24 @@ def angle_normalize(x):
 env = gym.make('AntsEnv-v0',Nmax=12)
 env.reset()
 
-rhist = []
+rrand = []
 dt = env.dt
-Nsim = 1000
+Nsim = 1500
+
+for i in range(Nsim):
+    env.render()
+    # take a random action and check untrained reward
+    obs, reward, done, info = env.step(env.action_space.sample())
+
+    rrand = np.append(rrand,reward)
+
+print(np.sum(rrand))
+
+env.reset()
+
+roptm = []
+dt = env.dt
+Nsim = 1500
 
 for i in range(Nsim):
     env.render()
@@ -34,12 +49,15 @@ for i in range(Nsim):
     obs, reward, done, info = env.step(optimal_act)
     # """
 
-    rhist = np.append(rhist,reward)
+    roptm = np.append(roptm,reward)
 
 env.close()
 
+print(np.sum(roptm))
+
 fig, ax = plt.subplots()
-ln, = ax.plot(np.linspace(0,Nsim*dt,Nsim), rhist, 'go-')
+ax.plot(np.linspace(0,Nsim*dt,Nsim), rrand, 'go-')
+ax.plot(np.linspace(0,Nsim*dt,Nsim), roptm, 'go-')
 ax.grid()
 ax.set(xlabel='timestep', ylabel='reward (velocity)', title='Reward History')
 plt.show()
