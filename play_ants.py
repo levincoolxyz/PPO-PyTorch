@@ -44,13 +44,15 @@ for i in range(Nsim):
         obs, reward, done, info = env.step(env.action_space.sample())
     else:
         obs = obs[inverse]
-        dotProd = obs[:env.Nmax-1]*np.cos(obs[env.Nmax-1:]) # force threshold assumed to be 0
-        pullDir = obs[env.Nmax-1:]
+        pull_threshold = -.9
+        dotProd = obs[:env.Nmax-1]*np.cos(obs[env.Nmax-1:]*np.pi)
+        pullProb = np.tanh(dotProd - pull_threshold)
+        pullDir = obs[env.Nmax-1:]*np.pi
         larger = angle_normalize(pullDir) > env.dphi/2
         smller = angle_normalize(pullDir) < -env.dphi/2
         pullDir[larger] = env.dphi/2
         pullDir[smller] = -env.dphi/2
-        optimal_act = np.append(np.tanh(dotProd),pullDir/env.dphi*2)
+        optimal_act = np.append(pullProb,pullDir/env.dphi*2)
         obs, reward, done, info = env.step(optimal_act[order])
 
     rreal = np.append(rreal,reward)
@@ -68,7 +70,7 @@ for i in range(Nsim):
     env.render()
 
     # best possible strategy (ignores observations, uses states)
-    pull_threshold = np.pi/2
+    pull_threshold = np.pi/2.1
     pullProb = 1 - np.logical_or(env.theta < pull_threshold, env.theta > (np.pi*2-pull_threshold))*1
     position, velocity = env.state
     pullDir = - position[2] - env.theta
