@@ -1,4 +1,6 @@
 import gym
+from gym import wrappers
+import time
 from PPO_ants import PPO, Memory
 from PIL import Image
 import torch
@@ -13,7 +15,7 @@ def test():
     action_dim = env.action_space.shape[0]
     
     n_episodes = 3          # num of episodes to run
-    max_timesteps = 1500    # max timesteps in one episode
+    max_timesteps = 500     # max timesteps in one episode
     render = True           # render the environment
     save_gif = False        # png images are saved in gif folder
     
@@ -38,6 +40,7 @@ def test():
     
     for ep in range(1, n_episodes+1):
         ep_reward = 0
+        env = wrappers.Monitor(env, './results/full/' + str(time.time()) + '/')
         observation = env.reset()
         for t in range(max_timesteps):
             action = ppo.select_action(observation, memory)

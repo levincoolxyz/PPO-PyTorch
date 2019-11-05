@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 
+# recorded videos by gym
+/results/
+
 # C extensions
 *.so
 
