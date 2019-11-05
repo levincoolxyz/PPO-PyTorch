@@ -1,5 +1,5 @@
 import gym
-from PPO_ants import PPO, Memory
+from PPO_cloned_ants import PPO, Memory
 from PIL import Image
 import torch
 

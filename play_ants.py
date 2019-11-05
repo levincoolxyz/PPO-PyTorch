@@ -20,7 +20,7 @@ for i in range(Nsim):
 
     rrand = np.append(rrand,reward)
 
-print(np.sum(rrand))
+print('Episode: rand\tReward: {}'.format(int(np.sum(rrand))))
 
 env.reset()
 
@@ -53,11 +53,13 @@ for i in range(Nsim):
 
 env.close()
 
-print(np.sum(roptm))
+print('Episode: opt\tReward: {}'.format(int(np.sum(roptm))))
 
+"""
 fig, ax = plt.subplots()
 ax.plot(np.linspace(0,Nsim*dt,Nsim), rrand, 'go-')
 ax.plot(np.linspace(0,Nsim*dt,Nsim), roptm, 'go-')
 ax.grid()
 ax.set(xlabel='timestep', ylabel='reward (velocity)', title='Reward History')
 plt.show()
+"""
