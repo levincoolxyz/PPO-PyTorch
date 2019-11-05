@@ -44,8 +44,8 @@ for i in range(Nsim):
         obs, reward, done, info = env.step(env.action_space.sample())
     else:
         obs = obs[inverse]
-        dotProd = obs[:env.Nmax-1]*obs[env.Nmax-1:] # force threshold assumed to be 0
-        pullDir = np.arccos(obs[env.Nmax-1:])
+        dotProd = obs[:env.Nmax-1]*np.cos(obs[env.Nmax-1:]) # force threshold assumed to be 0
+        pullDir = obs[env.Nmax-1:]
         larger = angle_normalize(pullDir) > env.dphi/2
         smller = angle_normalize(pullDir) < -env.dphi/2
         pullDir[larger] = env.dphi/2

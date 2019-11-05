@@ -18,8 +18,8 @@ def test():
     save_gif = False        # png images are saved in gif folder
     
     # filename and directory to load model from
-    # filename = "PPO_continuous_solved_" +env_name+ ".pth"
-    filename = "PPO_continuous_" +env_name+ ".pth"
+    # filename = "PPO_cloned_solved_" +env_name+ ".pth"
+    filename = "PPO_cloned_" +env_name+ ".pth"
     directory = "./"
 
     action_std = 0.5        # constant std for action distribution (Multivariate Normal)
