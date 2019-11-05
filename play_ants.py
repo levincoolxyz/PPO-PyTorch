@@ -14,7 +14,6 @@ inverse = np.append(index[:-1:2],index[1::2])
 ants = np.array(range(env.Nmax-1))
 order = np.concatenate((ants[:,None],ants[:,None]+env.Nmax-1),axis=1).flatten()
 
-'''
 env.reset()
 rrand = []
 dt = env.dt
@@ -28,9 +27,6 @@ for i in range(Nsim):
     rrand = np.append(rrand,reward)
 
 print('Episode: rand\tReward: {}'.format(int(np.sum(rrand))))
-
-env.reset()
-'''
 
 env.reset()
 rreal = []
@@ -57,8 +53,6 @@ for i in range(Nsim):
 
     rreal = np.append(rreal,reward)
 
-env.close()
-
 print('Episode: real\tReward: {}'.format(int(np.sum(rreal))))
 
 env.reset()
@@ -83,9 +77,9 @@ for i in range(Nsim):
 
     rbest = np.append(rbest,reward)
 
-env.close()
-
 print('Episode: best\tReward: {}'.format(int(np.sum(rbest))))
+
+env.close()
 
 """
 fig, ax = plt.subplots()
