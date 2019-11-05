@@ -155,7 +155,8 @@ def main():
     lr = 0.0003                 # parameters for Adam optimizer
     betas = (0.9, 0.999)
     
-    random_seed = None
+    # random_seed = None
+    random_seed = 1
     #############################################
     
     # creating environment

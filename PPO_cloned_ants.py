@@ -26,7 +26,7 @@ class ActorCritic(nn.Module):
         super(ActorCritic, self).__init__()
         # action mean range -1 to 1 (network of an *individual* ant 1 input 2 outputs)
         self.ant =  nn.Sequential(
-                nn.Linear(1, 64),
+                nn.Linear(2, 64),
                 nn.Tanh(),
                 nn.Linear(64, 32),
                 nn.Tanh(),
@@ -49,7 +49,7 @@ class ActorCritic(nn.Module):
         raise NotImplementedError
     
     def actor(self, observations):
-        out = [self.ant(observations[:,i:i+1]) for i in range(list(observations.size())[1])]
+        out = [self.ant(observations[:,i:i+2]) for i in range(0,list(observations.size())[1],2)]
         return torch.cat(out,dim=1)
 
     def act(self, observations, memory):
