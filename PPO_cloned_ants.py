@@ -24,7 +24,7 @@ class Memory:
 class ActorCritic(nn.Module):
     def __init__(self, observation_dim, action_dim, action_std):
         super(ActorCritic, self).__init__()
-        # action mean range -1 to 1 (network of an *individual* ant 1 input 2 outputs)
+        # action mean range -1 to 1 (network of an *individual ant* 2 in 2 out)
         self.ant =  nn.Sequential(
                 nn.Linear(2, 64),
                 nn.Tanh(),

@@ -22,7 +22,8 @@ def test():
     # filename and directory to load model from
     # filename = "PPO_cloned_solved_" +env_name+ ".pth"
     filename = "PPO_cloned_" +env_name+ ".pth"
-    directory = "./"
+    directory = "./preTrained/"
+    # directory = "./"
 
     action_std = 0.5        # constant std for action distribution (Multivariate Normal)
     K_epochs = 80           # update policy for K epochs
