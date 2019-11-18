@@ -83,8 +83,6 @@ class ActorCritic(nn.Module):
         return tuple(action[i].item() for i in range(self.Nfeet))
     
     def evaluate(self, state, action):
-#        print(state.size())
-#        print(action.size())
         action_probs = self.action_layer1(state)
         
         dist_entropy = []
@@ -94,10 +92,6 @@ class ActorCritic(nn.Module):
             dist_entropy.append(dist.entropy().reshape((-1,1)))
             action_logprobs.append(dist.log_prob(action[:,i//2]).reshape((-1,1)))
         
-        # print(dist_entropy)
-        # print(len(dist_entropy))
-        # print(action_logprobs)
-        # print(len(action_logprobs))
         dist_entropy = torch.cat(dist_entropy,dim=1)
         action_logprobs = torch.cat(action_logprobs,dim=1)
         
@@ -149,10 +143,6 @@ class PPO:
                 
             # Finding Surrogate Loss:
             advantages = rewards - state_values.detach()
-            # print(ratios)
-            # print(ratios.size())
-            # print(advantages)
-            # print(advantages.size())
             surr1 = ratios.t() * advantages
             surr2 = torch.clamp(ratios.t(), 1-self.eps_clip, 1+self.eps_clip) * advantages
             loss = -torch.min(surr1, surr2) + 0.5*self.MseLoss(state_values, rewards) - 0.01*dist_entropy.t()
@@ -168,22 +158,23 @@ class PPO:
 def main():
     ############## Hyperparameters ##############
     env_name = "Seastar-v0"
+    sensor = "ltxy"
     # creating environment
-    env = gym.make(env_name,dt = 0.1)
+    env = gym.make(env_name, dt = 0.1, SensorMode=sensor)
     state_dim = env.observation_space.shape[0]
     action_dim = env.Nfeet*2
     render = False
     solved_reward = 1000000000000 # stop training if avg_reward > solved_reward
-    log_interval = 20           # print avg reward in the interval
-    max_episodes = 1000000      # max training episodes
-    max_timesteps = 300         # max timesteps in one episode
-    n_latent_var = 64           # number of variables in hidden layer
-    update_timestep = 2000      # update policy every n timesteps
+    log_interval = 20             # print avg reward in the interval
+    max_episodes = 1000000        # max training episodes
+    max_timesteps = 300           # max timesteps in one episode
+    n_latent_var = 64             # number of variables in hidden layer
+    update_timestep = 2000        # update policy every n timesteps
     lr = 0.002
     betas = (0.9, 0.999)
-    gamma = 0.99                # discount factor
-    K_epochs = 4                # update policy for K epochs
-    eps_clip = 0.3              # clip parameter for PPO
+    gamma = 0.99                  # discount factor
+    K_epochs = 4                  # update policy for K epochs
+    eps_clip = 0.3                # clip parameter for PPO
     random_seed = None
     #############################################
     
@@ -195,9 +186,6 @@ def main():
     ppo = PPO(state_dim, action_dim, n_latent_var, lr, betas, gamma, K_epochs, eps_clip)
     print(lr,betas)
 
-    # ppo.policy.state_dict()['action_sublayer.4.bias'].data.copy_(torch.tensor([2,.1]))
-    # ppo.policy_old.state_dict()['action_sublayer.4.bias'].data.copy_(torch.tensor([2,.1]))
-    
     # logging variables
     running_reward = 0
     avg_length = 0
@@ -234,19 +222,17 @@ def main():
         # stop training if avg_reward > solved_reward
         if running_reward > (log_interval*solved_reward):
             print("########## Solved! ##########")
-            # torch.save(ppo.policy.state_dict(), './preTrained/PPO_{}.pth'.format(env_name))
-            torch.save(ppo.policy.state_dict(), './PPO_{}_4.pth'.format(env_name))
+            torch.save(ppo.policy.state_dict(), './PPO_solved_{}_{}.pth'.format(env_name,sensor))
             break
 
         # save every 100 episodes
         if i_episode % 100 == 0:
-        #     torch.save(ppo.policy.state_dict(), './preTrained/PPO_{}.pth'.format(env_name))
-            torch.save(ppo.policy.state_dict(), './PPO_{}_4.pth'.format(env_name))
+            torch.save(ppo.policy.state_dict(), './PPO_{}_{}.pth'.format(env_name,sensor))
             
         # logging
         if i_episode % log_interval == 0:
             avg_length = avg_length/log_interval
-            running_reward = (running_reward/log_interval)
+            running_reward = running_reward/log_interval
             
             print('Episode {} \t avg length: {} \t reward: {}'.format(i_episode, avg_length, running_reward))
             running_reward = 0

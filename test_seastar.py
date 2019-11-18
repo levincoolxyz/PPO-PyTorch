@@ -5,13 +5,16 @@ from PPO_seastar import PPO, Memory
 from PIL import Image
 import torch
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 def test():
     ############## Hyperparameters ##############
     env_name = "Seastar-v0"
+    sensor = "ltxy"
     # creating environment
-    env = gym.make(env_name)
+    env = gym.make(env_name,Nfeet=3,Lbody=1,SensorMode=sensor)
     state_dim = env.observation_space.shape[0]
-    action_dim = 4
+    action_dim = env.Nfeet*2
     render = False
     max_timesteps = 500
     n_latent_var = 64           # number of variables in hidden layer
@@ -28,24 +31,13 @@ def test():
     save_gif = False
 
     # filename = "PPO_{}.pth".format(env_name)
-    # filename = "PPO_{}_1.pth".format(env_name)
-    filename = "PPO_{}_4.pth".format(env_name)
-    # directory = "./preTrained/"
-    directory = "./"
+    filename = "PPO_{}_{}.pth".format(env_name,sensor)
+    directory = "./preTrained/"
+    # directory = "./"
     memory = Memory()
     ppo = PPO(state_dim, action_dim, n_latent_var, lr, betas, gamma, K_epochs, eps_clip)
     
-    def load_my_state_dict(self, state_dict):
-
-        own_state = self.state_dict()
-        for name, param in state_dict.items():
-            if name not in own_state:
-                continue
-            else:
-                own_state[name].copy_(param)
-        return self
-
-    preTrainedParam = torch.load(directory+filename)
+    preTrainedParam = torch.load(directory+filename, map_location=device)
     preTrainedParam.pop('affine.weight',None)
     preTrainedParam.pop('affine.bias',None)
     preTrainedParam.pop('value_layer.0.weight',None)
@@ -54,7 +46,7 @@ def test():
     preTrainedParam.pop('value_layer.0.bias',None)
     preTrainedParam.pop('value_layer.2.bias',None)
     preTrainedParam.pop('value_layer.4.bias',None)
-    load_my_state_dict(ppo.policy_old,preTrainedParam)
+    load_existing_param(ppo.policy_old,preTrainedParam)
     
     for ep in range(1, n_episodes+1):
         ep_reward = 0
@@ -79,6 +71,16 @@ def test():
         ep_reward = 0
         env.close()
     
+def load_existing_param(network, state_dict):
+
+    own_state = network.state_dict()
+    for name, param in state_dict.items():
+        if name not in own_state:
+            continue
+        else:
+            own_state[name].copy_(param)
+    return network
+
 if __name__ == '__main__':
     test()
     

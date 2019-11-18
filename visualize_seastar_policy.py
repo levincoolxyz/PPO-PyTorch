@@ -17,7 +17,7 @@ def visualize_policy():
     # creating environment
     env = gym.make(env_name)
     state_dim = env.observation_space.shape[0]
-    action_dim = 4
+    action_dim = env.Nfeet*2
     render = False
     max_timesteps = 500
     n_latent_var = 64           # number of variables in hidden layer

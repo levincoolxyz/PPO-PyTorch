@@ -5,7 +5,8 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-env = gym.make('Seastar-v0',Nfeet=2,dt=0.1,Lbody=0)
+# env = gym.make('Seastar-v0',dt=0.1)
+env = gym.make('Seastar-v0',Nfeet=10,Lbody=5,dt=0.1)
 Nsim = 500
 dt = env.dt
 
