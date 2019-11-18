@@ -1,8 +1,5 @@
 import gym
-from gym import wrappers
-import time
 from PPO_seastar import PPO, Memory
-from PIL import Image
 import torch
 import matplotlib
 import matplotlib.pyplot as plt
@@ -14,12 +11,13 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 def visualize_policy():
     ############## Hyperparameters ##############
     env_name = "Seastar-v0"
+    sensor = "ltxy"
+    # sensor = "l"
     # creating environment
-    env = gym.make(env_name)
+    env = gym.make(env_name,SensorMode=sensor)
     state_dim = env.observation_space.shape[0]
     action_dim = env.Nfeet*2
-    render = False
-    max_timesteps = 500
+
     n_latent_var = 64           # number of variables in hidden layer
     lr = 0.0007
     betas = (0.9, 0.999)
@@ -28,14 +26,8 @@ def visualize_policy():
     eps_clip = 0.2              # clip parameter for PPO
     #############################################
 
-    n_episodes = 10
-    max_timesteps = 300
-    render = True
-    save_gif = False
-
     # filename = "PPO_{}.pth".format(env_name)
-    # filename = "PPO_{}_1.pth".format(env_name)
-    filename = "PPO_{}_4.pth".format(env_name)
+    filename = "PPO_{}_{}.pth".format(env_name,sensor)
     # directory = "./preTrained/"
     directory = "./"
 
@@ -52,7 +44,7 @@ def visualize_policy():
     # fig, ax = plt.subplots()
     # ax.plot(test_lengths.data.cpu().numpy(), detach_likelihood, 'ko-')
     # ax.grid()
-    # ax.set(xlabel='foot length', ylabel='detach likelihood', title='Trained Policy')
+    # ax.set(xlabel='foot length', ylabel='detach probability', title='Trained Policy')
     # plt.show()
 
     Nres = 100
@@ -80,15 +72,15 @@ def visualize_policy():
     fig = plt.figure()
     ax1 = fig.add_subplot(1,3,1,projection='3d')
     ax1.plot_surface(meshl, mesht, detach1, cmap='viridis', edgecolor='none')
-    ax1.set(xlabel='foot length', ylabel='foot angle', title='detach likelihood')
+    ax1.set(xlabel='foot length', ylabel='foot angle', title='detach probability')
 
     ax2 = fig.add_subplot(1,3,2,projection='3d')
     ax2.plot_surface(meshl, meshx, detach2, cmap='viridis', edgecolor='none')
-    ax2.set(xlabel='foot length', ylabel='foot xdot', title='detach likelihood')
+    ax2.set(xlabel='foot length', ylabel='foot xdot', title='detach probability')
 
     ax3 = fig.add_subplot(1,3,3,projection='3d')
     ax3.plot_surface(meshl, meshy, detach3, cmap='viridis', edgecolor='none')
-    ax3.set(xlabel='foot length', ylabel='foot ydot', title='detach likelihood')
+    ax3.set(xlabel='foot length', ylabel='foot ydot', title='detach probability')
     
     plt.show()
     

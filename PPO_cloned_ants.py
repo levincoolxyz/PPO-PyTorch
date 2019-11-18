@@ -122,16 +122,16 @@ class PPO:
         # Optimize policy for K epochs:
         for _ in range(self.K_epochs):
             # Evaluating old actions and values :
-            logprobs, observation_values, dist_entropy = self.policy.evaluate(old_observations, old_actions)
+            logprobs, value_estimate, dist_entropy = self.policy.evaluate(old_observations, old_actions)
             
             # Finding the ratio (pi_theta / pi_theta__old):
             ratios = torch.exp(logprobs - old_logprobs.detach())
 
             # Finding Surrogate Loss:
-            advantages = rewards - observation_values.detach()   
+            advantages = rewards - value_estimate.detach()   
             surr1 = ratios * advantages
             surr2 = torch.clamp(ratios, 1-self.eps_clip, 1+self.eps_clip) * advantages
-            loss = -torch.min(surr1, surr2) + 0.5*self.MseLoss(observation_values, rewards) - 0.01*dist_entropy
+            loss = -torch.min(surr1, surr2) + 0.5*self.MseLoss(value_estimate, rewards) - 0.01*dist_entropy
             
             # take gradient step
             self.optimizer.zero_grad()
@@ -145,9 +145,9 @@ def main():
     ############## Hyperparameters ##############
     env_name = "AntsEnv-v0"
     render = False
-    solved_reward = 540         # stop training if avg_reward > solved_reward (actual optimal ~ 1630)
+    solved_reward = 600         # stop training if avg_reward > solved_reward (actual optimal ~ 1630)
     log_interval = 20           # print avg reward in the interval
-    max_episodes = 10000        # max training episodes
+    max_episodes = 100000       # max training episodes
     max_timesteps = 500         # max timesteps in one episode
     
     update_timestep = 4000      # update policy every n timesteps
@@ -185,7 +185,7 @@ def main():
     
     # training loop
     for i_episode in range(1, max_episodes+1):
-        observations = env.reset()
+        observations = env.reset(rand=True)
         for t in range(max_timesteps):
             time_step +=1
             # Running policy_old:
@@ -215,8 +215,8 @@ def main():
             torch.save(ppo.policy.state_dict(), './PPO_cloned_solved_{}.pth'.format(env_name))
             break
         
-        # save every 500 episodes
-        if i_episode % 500 == 0:
+        # save every 100 episodes
+        if i_episode % 100 == 0:
             torch.save(ppo.policy.state_dict(), './PPO_cloned_{}.pth'.format(env_name))
             
         # logging

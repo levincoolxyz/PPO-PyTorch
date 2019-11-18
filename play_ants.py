@@ -8,7 +8,9 @@ import matplotlib.pyplot as plt
 def angle_normalize(x):
     return (((x+np.pi) % (2*np.pi)) - np.pi)
 
-env = gym.make('AntsEnv-v0', Nmax=12)
+goalDir = np.pi/6
+# goalDir = 0
+env = gym.make('AntsEnv-v0', Nmax=12, InformerDirection=goalDir)
 Nsim = 500
 dt = env.dt
 
@@ -30,7 +32,22 @@ for i in range(Nsim):
     rrand = np.append(rrand,reward)
 
 env.close()
-print('Episode: rand\tReward: {}'.format(int(np.sum(rrand))))
+print('Episode: rand\tReward: {}'.format(np.sum(rrand)))
+
+env = wrappers.Monitor(env, './results/null/' + str(time.time()) + '/')
+env.reset()
+rlift = []
+
+for i in range(Nsim):
+    env.render()
+    # always lift, never pull
+    lazy = np.append(np.full(env.Nmax-1,1),np.full(env.Nmax-1,0))
+    obs, reward, done, info = env.step(lazy[order])
+
+    rlift = np.append(rlift,reward)
+
+env.close()
+print('Episode: lift\tReward: {}'.format(np.sum(rlift)))
 
 env = wrappers.Monitor(env, './results/real/' + str(time.time()) + '/')
 obs = env.reset()
@@ -40,21 +57,17 @@ for i in range(Nsim):
     env.render()
     # statistically 'realistic' strategy (do not use states)
     obs = obs[inverse]
-    pull_threshold = -.9
+    pull_threshold = 1
     dotProd = obs[:env.Nmax-1]*np.cos(obs[env.Nmax-1:]*np.pi)
-    pullProb = np.tanh(dotProd - pull_threshold)
-    pullDir = obs[env.Nmax-1:]*np.pi
-    larger = angle_normalize(pullDir) > env.dphi/2
-    smller = angle_normalize(pullDir) < -env.dphi/2
-    pullDir[larger] = env.dphi/2
-    pullDir[smller] = -env.dphi/2
-    optimal_act = np.append(pullProb,pullDir/env.dphi*2)
-    obs, reward, done, info = env.step(optimal_act[order])
+    liftProb = 1 - (np.tanh(dotProd - pull_threshold)/2 + .5)
+    pullDir = np.clip(angle_normalize(-obs[env.Nmax-1:]*np.pi),-env.dphi/2,env.dphi/2)
+    real_act = np.append((liftProb-.5)*2,pullDir/env.dphi*2)
+    obs, reward, done, info = env.step(real_act[order])
 
     rreal = np.append(rreal,reward)
 
 env.close()
-print('Episode: real\tReward: {}'.format(int(np.sum(rreal))))
+print('Episode: real\tReward: {}'.format(np.sum(rreal)))
 
 env = wrappers.Monitor(env, './results/best/' + str(time.time()) + '/')
 env.reset()
@@ -63,22 +76,18 @@ rbest = []
 for i in range(Nsim):
     env.render()
 
-    # best possible strategy (ignores observations, uses states)
-    pull_threshold = np.pi/2.1
-    pullProb = 1 - np.logical_or(env.theta < pull_threshold, env.theta > (np.pi*2-pull_threshold))*1
+    # best possible strategy (ignores observations, uses states) for goalDir != pi
+    pull_threshold = np.pi/2
+    liftProb = 1 - np.logical_or(env.theta < pull_threshold, env.theta > (np.pi*2-pull_threshold))*1
     position, velocity = env.state
-    pullDir = - position[2] - env.theta
-    larger = angle_normalize(pullDir) > env.dphi/2
-    smller = angle_normalize(pullDir) < -env.dphi/2
-    pullDir[larger] = env.dphi/2
-    pullDir[smller] = -env.dphi/2
-    best_act = np.append((pullProb[1:]-.5)*2,pullDir[1:]/env.dphi*2)
+    pullDir = np.clip(angle_normalize(-position[2] - env.theta + goalDir),-env.dphi/2,env.dphi/2)
+    best_act = np.append((liftProb[1:]-.5)*2,pullDir[1:]/env.dphi*2)
     obs, reward, done, info = env.step(best_act[order])
 
     rbest = np.append(rbest,reward)
 
 env.close()
-print('Episode: best\tReward: {}'.format(int(np.sum(rbest))))
+print('Episode: best\tReward: {}'.format(np.sum(rbest)))
 
 """
 fig, ax = plt.subplots()

@@ -4,13 +4,21 @@ import time
 from PPO_cloned_ants import PPO, Memory
 from PIL import Image
 import torch
+import numpy as np
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def test():
     ############## Hyperparameters ##############
     env_name = "AntsEnv-v0"
-    env = gym.make(env_name)
+    # Nants = 20
+    Nants = 12
+    # Nants = 6
+    # goalDir = np.pi/2*3
+    # goalDir = np.pi/2
+    goalDir = np.pi/4
+    # goalDir = 0
+    env = gym.make(env_name,Nmax=Nants,InformerDirection=goalDir)
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
     
@@ -22,10 +30,10 @@ def test():
     # filename and directory to load model from
     # filename = "PPO_cloned_solved_" +env_name+ ".pth"
     filename = "PPO_cloned_" +env_name+ ".pth"
-    directory = "./preTrained/"
-    # directory = "./"
+    # directory = "./preTrained/"
+    directory = "./"
 
-    action_std = 0.5        # constant std for action distribution (Multivariate Normal)
+    action_std = 0.01       # constant std for action distribution (Multivariate Normal)
     K_epochs = 80           # update policy for K epochs
     eps_clip = 0.2          # clip parameter for PPO
     gamma = 0.99            # discount factor
@@ -36,7 +44,17 @@ def test():
     
     memory = Memory()
     ppo = PPO(state_dim, action_dim, action_std, lr, betas, gamma, K_epochs, eps_clip)
-    ppo.policy_old.load_state_dict(torch.load(directory+filename,map_location=device))
+
+    preTrainedParam = torch.load(directory+filename, map_location=device)
+    preTrainedParam.pop('affine.weight',None)
+    preTrainedParam.pop('affine.bias',None)
+    preTrainedParam.pop('critic.0.weight',None)
+    preTrainedParam.pop('critic.2.weight',None)
+    preTrainedParam.pop('critic.4.weight',None)
+    preTrainedParam.pop('critic.0.bias',None)
+    preTrainedParam.pop('critic.2.bias',None)
+    preTrainedParam.pop('critic.4.bias',None)
+    load_existing_param(ppo.policy_old,preTrainedParam)
     
     for ep in range(1, n_episodes+1):
         ep_reward = 0
@@ -55,9 +73,19 @@ def test():
             if done:
                 break
             
-        print('Episode: {}\tReward: {}'.format(ep, int(ep_reward)))
+        print('Episode: {}\tReward: {}'.format(ep, ep_reward))
         ep_reward = 0
         env.close()
+    
+def load_existing_param(network, state_dict):
+
+    own_state = network.state_dict()
+    for name, param in state_dict.items():
+        if name not in own_state:
+            continue
+        else:
+            own_state[name].copy_(param)
+    return network
     
 if __name__ == '__main__':
     test()

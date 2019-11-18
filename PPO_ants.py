@@ -118,16 +118,16 @@ class PPO:
         # Optimize policy for K epochs:
         for _ in range(self.K_epochs):
             # Evaluating old actions and values :
-            logprobs, observation_values, dist_entropy = self.policy.evaluate(old_observations, old_actions)
+            logprobs, value_estimate, dist_entropy = self.policy.evaluate(old_observations, old_actions)
             
             # Finding the ratio (pi_theta / pi_theta__old):
             ratios = torch.exp(logprobs - old_logprobs.detach())
 
             # Finding Surrogate Loss:
-            advantages = rewards - observation_values.detach()   
+            advantages = rewards - value_estimate.detach()   
             surr1 = ratios * advantages
             surr2 = torch.clamp(ratios, 1-self.eps_clip, 1+self.eps_clip) * advantages
-            loss = -torch.min(surr1, surr2) + 0.5*self.MseLoss(observation_values, rewards) - 0.01*dist_entropy
+            loss = -torch.min(surr1, surr2) + 0.5*self.MseLoss(value_estimate, rewards) - 0.01*dist_entropy
             
             # take gradient step
             self.optimizer.zero_grad()
@@ -181,7 +181,7 @@ def main():
     
     # training loop
     for i_episode in range(1, max_episodes+1):
-        observations = env.reset()
+        observations = env.reset(rand=True)
         for t in range(max_timesteps):
             time_step +=1
             # Running policy_old:
