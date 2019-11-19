@@ -53,13 +53,15 @@ env = wrappers.Monitor(env, './results/real/' + str(time.time()) + '/')
 obs = env.reset()
 rreal = []
 
+pull_coeff = 2
+pull_threshold = .5
+
 for i in range(Nsim):
     env.render()
     # statistically 'realistic' strategy (do not use states)
     obs = obs[inverse]
-    pull_threshold = 1
     dotProd = obs[:env.Nmax-1]*np.cos(obs[env.Nmax-1:]*np.pi)
-    liftProb = 1 - (np.tanh(dotProd - pull_threshold)/2 + .5)
+    liftProb = 1 - (np.tanh(pull_coeff*(dotProd - pull_threshold))/2 + .5)
     pullDir = np.clip(angle_normalize(-obs[env.Nmax-1:]*np.pi),-env.dphi/2,env.dphi/2)
     real_act = np.append((liftProb-.5)*2,pullDir/env.dphi*2)
     obs, reward, done, info = env.step(real_act[order])

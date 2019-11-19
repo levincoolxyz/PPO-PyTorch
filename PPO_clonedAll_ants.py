@@ -5,7 +5,7 @@ import gym
 import numpy as np
 
 deviceName = "cuda:0" if torch.cuda.is_available() else "cpu"
-# deviceName = "cpu"
+deviceName = "cpu"
 device = torch.device(deviceName)
 
 class Memory:
@@ -37,8 +37,8 @@ class ActorCritic(nn.Module):
                 )
 
         # critic
-        self.critic = nn.Sequential(
-                nn.Linear(observation_dim, 64),
+        self.val = nn.Sequential(
+                nn.Linear(2, 64),
                 nn.Tanh(),
                 nn.Linear(64, 32),
                 nn.Tanh(),
@@ -53,6 +53,10 @@ class ActorCritic(nn.Module):
     def actor(self, observations):
         out = [self.ant(observations[:,i:i+2]) for i in range(0,list(observations.size())[1],2)]
         return torch.cat(out,dim=1)
+
+    def critic(self, observations):
+        out = [self.val(observations[:,i:i+2]) for i in range(0,list(observations.size())[1],2)]
+        return torch.mean(torch.cat(out,dim=1),dim=1)
 
     def act(self, observations, memory):
         action_mean = self.actor(observations)
@@ -166,7 +170,7 @@ def main():
     #############################################
     
     # creating environment
-    env = gym.make(env_name)
+    env = gym.make(env_name,Nmax=6)
     observation_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
     
@@ -182,8 +186,15 @@ def main():
 
     filename = "PPO_cloned_{}_{}.pth".format(env_name,deviceName)
     directory = "./preTrained/"
-    ppo.policy.load_state_dict(torch.load(directory+filename,map_location=device))
-    ppo.policy_old.load_state_dict(torch.load(directory+filename,map_location=device))
+    preTrainedParam = torch.load(directory+filename, map_location=device)
+    preTrainedParam.pop('critic.0.weight',None)
+    preTrainedParam.pop('critic.2.weight',None)
+    preTrainedParam.pop('critic.4.weight',None)
+    preTrainedParam.pop('critic.0.bias',None)
+    preTrainedParam.pop('critic.2.bias',None)
+    preTrainedParam.pop('critic.4.bias',None)
+    load_existing_param(ppo.policy,preTrainedParam)
+    load_existing_param(ppo.policy_old,preTrainedParam)
     
     # logging variables
     running_reward = 0
@@ -219,12 +230,12 @@ def main():
         # stop training if avg_reward > solved_reward
         if running_reward > (log_interval*solved_reward):
             print("########## Solved! ##########")
-            torch.save(ppo.policy.state_dict(), './PPO_cloned_solved_{}_{}.pth'.format(env_name,deviceName))
+            torch.save(ppo.policy.state_dict(), './PPO_clonedAll_solved_{}_{}.pth'.format(env_name,deviceName))
             break
         
         # save every 100 episodes
         if i_episode % 100 == 0:
-            torch.save(ppo.policy.state_dict(), './PPO_cloned_{}_{}.pth'.format(env_name,deviceName))
+            torch.save(ppo.policy.state_dict(), './PPO_clonedAll_{}_{}.pth'.format(env_name,deviceName))
             
         # logging
         if i_episode % log_interval == 0:
@@ -235,6 +246,16 @@ def main():
             running_reward = 0
             avg_length = 0
             
+    
+def load_existing_param(network, state_dict):
+
+    own_state = network.state_dict()
+    for name, param in state_dict.items():
+        if name not in own_state:
+            continue
+        else:
+            own_state[name].copy_(param)
+    return network
+
 if __name__ == '__main__':
     main()
-    

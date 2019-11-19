@@ -6,7 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits import mplot3d
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+deviceName = "cuda:0" if torch.cuda.is_available() else "cpu"
+deviceName = "cpu"
+device = torch.device(deviceName)
 
 def visualize_policy():
     ############## Hyperparameters ##############
@@ -25,14 +27,17 @@ def visualize_policy():
     #############################################
     
     # filename and directory to load model from
-    # filename = "PPO_cloned_solved_" +env_name+ ".pth"
-    filename = "PPO_cloned_" +env_name+ ".pth"
+    deviceName = "cpu"
+    # filename = "PPO_cloned_solved_{}.pth".format(env_name)
+    # filename = "PPO_cloned_{}.pth".format(env_name)
+    filename = "PPO_cloned_{}_{}.pth".format(env_name,deviceName)
     # directory = "./preTrained/"
     directory = "./"
 
     memory = Memory()
     ppo = PPO(state_dim, action_dim, action_std, lr, betas, gamma, K_epochs, eps_clip)
     ppo.policy_old.load_state_dict(torch.load(directory+filename,map_location=device))
+    ppo.policy_old.ant.to(device)
     
     Nres = 100
     test_forces = np.linspace(0,1.5,Nres)
@@ -47,7 +52,8 @@ def visualize_policy():
     pullO = np.zeros((Nres,Nres))
     phiO = np.zeros((Nres,Nres))
 
-    pull_threshold = 0.9
+    pull_coeff = 5
+    pull_threshold = 0.5
 
     for i in range(Nres):
         for j in range(Nres):
@@ -55,7 +61,7 @@ def visualize_policy():
             output1 = ppo.policy_old.ant(input1)
 
             dotProd = meshf[j,i]*np.cos(mesht[j,i])
-            pullO[j,i] = np.tanh(dotProd - pull_threshold)/2.+.5
+            pullO[j,i] = np.tanh(pull_coeff*(dotProd - pull_threshold))/2.+.5
             phiO[j,i] = np.clip(-mesht[j,i],-env.dphi/2,env.dphi/2)
 
             pull[j,i] = 1 - (output1[:,0].data.cpu().numpy()/2.+.5)

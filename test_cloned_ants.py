@@ -6,7 +6,9 @@ from PIL import Image
 import torch
 import numpy as np
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+deviceName = "cuda:0" if torch.cuda.is_available() else "cpu"
+deviceName = "cpu"
+device = torch.device(deviceName)
 
 def test():
     ############## Hyperparameters ##############
@@ -28,8 +30,10 @@ def test():
     save_gif = False        # png images are saved in gif folder
     
     # filename and directory to load model from
-    # filename = "PPO_cloned_solved_" +env_name+ ".pth"
-    filename = "PPO_cloned_" +env_name+ ".pth"
+    deviceName = "cpu"
+    # filename = "PPO_cloned_solved_{}.pth".format(env_name)
+    # filename = "PPO_cloned_{}.pth".format(env_name)
+    filename = "PPO_cloned_{}_{}.pth".format(env_name,deviceName)
     # directory = "./preTrained/"
     directory = "./"
 
@@ -46,8 +50,6 @@ def test():
     ppo = PPO(state_dim, action_dim, action_std, lr, betas, gamma, K_epochs, eps_clip)
 
     preTrainedParam = torch.load(directory+filename, map_location=device)
-    preTrainedParam.pop('affine.weight',None)
-    preTrainedParam.pop('affine.bias',None)
     preTrainedParam.pop('critic.0.weight',None)
     preTrainedParam.pop('critic.2.weight',None)
     preTrainedParam.pop('critic.4.weight',None)
@@ -59,7 +61,8 @@ def test():
     for ep in range(1, n_episodes+1):
         ep_reward = 0
         env = wrappers.Monitor(env, './results/cloned/' + str(time.time()) + '/')
-        observation = env.reset()
+        # observation = env.reset()
+        observation = env.reset(rand=True)
         for t in range(max_timesteps):
             action = ppo.select_action(observation, memory)
             observation, reward, done, _ = env.step(action)
