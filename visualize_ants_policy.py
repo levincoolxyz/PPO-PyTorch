@@ -30,13 +30,14 @@ def visualize_policy():
     deviceName = "cpu"
     # filename = "PPO_cloned_solved_{}.pth".format(env_name)
     # filename = "PPO_cloned_{}.pth".format(env_name)
-    filename = "PPO_cloned_{}_{}.pth".format(env_name,deviceName)
+    # filename = "PPO_cloned_{}_{}.pth".format(env_name,deviceName)
+    filename = "PPO_clonedAll_{}_{}.pth".format(env_name,deviceName)
     # directory = "./preTrained/"
     directory = "./"
 
     memory = Memory()
     ppo = PPO(state_dim, action_dim, action_std, lr, betas, gamma, K_epochs, eps_clip)
-    ppo.policy_old.load_state_dict(torch.load(directory+filename,map_location=device))
+    load_existing_param(ppo.policy_old,torch.load(directory+filename,map_location=device))
     ppo.policy_old.ant.to(device)
     
     Nres = 100
@@ -99,8 +100,16 @@ def visualize_policy():
     ax2.set(xlabel='x', ylabel='y', title='pull angle')
 
     plt.show()
+
+def load_existing_param(network, state_dict):
+
+    own_state = network.state_dict()
+    for name, param in state_dict.items():
+        if name not in own_state:
+            continue
+        else:
+            own_state[name].copy_(param)
+    return network
     
 if __name__ == '__main__':
     visualize_policy()
-    
-    
