@@ -43,7 +43,7 @@ def visualize_policy():
     ppo.policy_old.ant.to(device)
     
     Nres = 100
-    test_forces = np.linspace(0,5,Nres)
+    test_forces = np.linspace(0,1.5,Nres)
     test_thetas = np.linspace(-np.pi,np.pi,Nres)
 
     meshf, mesht = np.meshgrid(test_forces,test_thetas)

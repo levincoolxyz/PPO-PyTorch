@@ -8,9 +8,7 @@ import matplotlib.pyplot as plt
 def angle_normalize(x):
     return (((x+np.pi) % (2*np.pi)) - np.pi)
 
-goalDir = 30
-# goalDir = 0
-env = gym.make('AntsEnv-v0', Nmax=12, dphi=90, goalDir=goalDir)
+env = gym.make('AntsEnv-v0', Nmax=12, dphi=90)
 Nsim = 500
 dt = env.dt
 
@@ -78,7 +76,7 @@ rbest = []
 for i in range(Nsim):
     env.render()
 
-    # best possible strategy (ignores observations, uses states) for goalDir != pi
+    # best possible strategy (ignores observations, all ants informed and follow)
     pull_threshold = np.pi/2
     liftProb = 1 - (np.abs(angle_normalize(env.theta - env.theta[0] - env.goalDir)) < pull_threshold)
     position, velocity = env.state
