@@ -170,7 +170,9 @@ def main():
     #############################################
     
     # creating environment
-    env = gym.make(env_name,Nmax=6)
+    # Nants = 20
+    Nants = 8
+    env = gym.make(env_name,Nmax=Nants,dphi=50)
     observation_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
     

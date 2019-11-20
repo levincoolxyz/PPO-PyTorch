@@ -13,7 +13,9 @@ device = torch.device(deviceName)
 def visualize_policy():
     ############## Hyperparameters ##############
     env_name = "AntsEnv-v0"
-    env = gym.make(env_name)
+    dphi = 50
+    # dphi = 30
+    env = gym.make(env_name,dphi=dphi)
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
 
@@ -41,7 +43,7 @@ def visualize_policy():
     ppo.policy_old.ant.to(device)
     
     Nres = 100
-    test_forces = np.linspace(0,1.5,Nres)
+    test_forces = np.linspace(0,5,Nres)
     test_thetas = np.linspace(-np.pi,np.pi,Nres)
 
     meshf, mesht = np.meshgrid(test_forces,test_thetas)

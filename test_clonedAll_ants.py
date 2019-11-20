@@ -1,7 +1,7 @@
 import gym
 from gym import wrappers
 import time
-from PPO_cloned_ants import PPO, Memory
+from PPO_clonedAll_ants import PPO, Memory
 from PIL import Image
 import torch
 import numpy as np
@@ -28,9 +28,9 @@ def test():
     
     # filename and directory to load model from
     deviceName = "cpu"
-    # filename = "PPO_cloned_solved_{}.pth".format(env_name)
-    # filename = "PPO_cloned_{}.pth".format(env_name)
-    filename = "PPO_cloned_{}_{}.pth".format(env_name,deviceName)
+    # filename = "PPO_clonedAll_solved_{}.pth".format(env_name)
+    # filename = "PPO_clonedAll_{}.pth".format(env_name)
+    filename = "PPO_clonedAll_{}_{}.pth".format(env_name,deviceName)
     # directory = "./preTrained/"
     directory = "./"
 

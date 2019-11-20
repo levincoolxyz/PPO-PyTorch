@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 def angle_normalize(x):
     return (((x+np.pi) % (2*np.pi)) - np.pi)
 
-goalDir = np.pi/6
+goalDir = 30
 # goalDir = 0
-env = gym.make('AntsEnv-v0', Nmax=12, InformerDirection=goalDir)
+env = gym.make('AntsEnv-v0', Nmax=12, dphi=90, goalDir=goalDir)
 Nsim = 500
 dt = env.dt
 
@@ -21,7 +21,7 @@ ants = np.array(range(env.Nmax-1))
 order = np.concatenate((ants[:,None],ants[:,None]+env.Nmax-1),axis=1).flatten()
 
 env = wrappers.Monitor(env, './results/rand/' + str(time.time()) + '/')
-env.reset()
+env.reset(rand=True)
 rrand = []
 
 for i in range(Nsim):
@@ -35,7 +35,7 @@ env.close()
 print('Episode: rand\tReward: {}'.format(np.sum(rrand)))
 
 env = wrappers.Monitor(env, './results/null/' + str(time.time()) + '/')
-env.reset()
+env.reset(rand=True)
 rlift = []
 
 for i in range(Nsim):
@@ -50,7 +50,7 @@ env.close()
 print('Episode: lift\tReward: {}'.format(np.sum(rlift)))
 
 env = wrappers.Monitor(env, './results/real/' + str(time.time()) + '/')
-obs = env.reset()
+obs = env.reset(rand=True)
 rreal = []
 
 pull_coeff = 2
@@ -72,7 +72,7 @@ env.close()
 print('Episode: real\tReward: {}'.format(np.sum(rreal)))
 
 env = wrappers.Monitor(env, './results/best/' + str(time.time()) + '/')
-env.reset()
+env.reset(rand=True)
 rbest = []
 
 for i in range(Nsim):
@@ -80,9 +80,9 @@ for i in range(Nsim):
 
     # best possible strategy (ignores observations, uses states) for goalDir != pi
     pull_threshold = np.pi/2
-    liftProb = 1 - np.logical_or(env.theta < pull_threshold, env.theta > (np.pi*2-pull_threshold))*1
+    liftProb = 1 - (np.abs(angle_normalize(env.theta - env.theta[0] - env.goalDir)) < pull_threshold)
     position, velocity = env.state
-    pullDir = np.clip(angle_normalize(-position[2] - env.theta + goalDir),-env.dphi/2,env.dphi/2)
+    pullDir = np.clip(angle_normalize(-position[2] - env.theta + env.goalDir),-env.dphi/2,env.dphi/2)
     best_act = np.append((liftProb[1:]-.5)*2,pullDir[1:]/env.dphi*2)
     obs, reward, done, info = env.step(best_act[order])
 
