@@ -69,6 +69,28 @@ for i in range(Nsim):
 env.close()
 print('Episode: real\tReward: {}'.format(np.sum(rreal)))
 
+env = wrappers.Monitor(env, './results/nodir/' + str(time.time()) + '/')
+obs = env.reset(rand=True)
+rnodir = []
+
+pull_coeff = 2
+pull_threshold = .5
+
+for i in range(Nsim):
+    env.render()
+    # stat strategy without direction control (do not use states)
+    obs = obs[inverse]
+    dotProd = obs[:env.Nmax-1]*np.cos(obs[env.Nmax-1:]*np.pi)
+    liftProb = 1 - (np.tanh(pull_coeff*(dotProd - pull_threshold))/2 + .5)
+    pullDir = np.random.uniform(-env.dphi/2,env.dphi/2,(env.Nmax-1,))
+    nodir_act = np.append((liftProb-.5)*2,pullDir/env.dphi*2)
+    obs, reward, done, info = env.step(nodir_act[order])
+
+    rnodir = np.append(rnodir,reward)
+
+env.close()
+print('Episode: PorL\tReward: {}'.format(np.sum(rnodir)))
+
 env = wrappers.Monitor(env, './results/best/' + str(time.time()) + '/')
 env.reset(rand=True)
 rbest = []

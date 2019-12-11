@@ -211,7 +211,7 @@ def main():
             # Running policy_old:
             action = ppo.select_action(observations, memory)
             observations, reward, done, _ = env.step(action)
-            
+
             # Saving reward and is_terminals:
             memory.rewards.append(reward)
             memory.is_terminals.append(done)
@@ -219,6 +219,10 @@ def main():
             # update if its time
             if time_step % update_timestep == 0:
                 ppo.update(memory)
+
+                obs_hist = torch.squeeze(torch.stack(memory.observations).to(device)).detach()
+                torch.save(obs_hist, './Obs_clonedAll_{}_{}_{}.pt'.format(env_name,deviceName,time_step))
+
                 memory.clear_memory()
                 time_step = 0
             running_reward += reward
