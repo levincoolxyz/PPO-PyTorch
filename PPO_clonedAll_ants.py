@@ -1,7 +1,10 @@
+#!/usr/bin/python3
+
 import torch
 import torch.nn as nn
 from torch.distributions import MultivariateNormal
 import gym
+import ants
 import numpy as np
 
 deviceName = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -172,7 +175,8 @@ def main():
     # creating environment
     # Nants = 20
     Nants = 8
-    env = gym.make(env_name,Nmax=Nants,dphi=50)
+    # env = gym.make(env_name,Nmax=Nants,dphi=50)
+    env = ants.AntsEnv(Nmax=Nants,dphi=50)
     observation_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
     

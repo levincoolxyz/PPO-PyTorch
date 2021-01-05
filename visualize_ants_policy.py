@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import gym
 from PPO_cloned_ants import PPO, Memory
 import torch
@@ -5,6 +7,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits import mplot3d
+import ants
 
 deviceName = "cuda:0" if torch.cuda.is_available() else "cpu"
 deviceName = "cpu"
@@ -15,7 +18,8 @@ def visualize_policy():
     env_name = "AntsEnv-v0"
     dphi = 50
     # dphi = 30
-    env = gym.make(env_name,dphi=dphi)
+    # env = gym.make(env_name,dphi=dphi)
+    env = ants.AntsEnv(dphi=dphi)
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
 

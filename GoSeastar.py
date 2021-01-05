@@ -1,12 +1,17 @@
+#!/usr/bin/python3
+
 import gym
 from gym import wrappers
 import time
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import discrete_seastar as sstar
 
 # env = gym.make('Seastar-v0',dt=0.1)
-env = gym.make('Seastar-v0',Nfeet=10,Lbody=5,dt=0.1)
+# env = sstar.SeastarEnv(dt=0.1)
+# env = gym.make('Seastar-v0',Nfeet=10,Lbody=5,dt=0.1)
+env = sstar.SeastarEnv(Nfeet=10,Lbody=5,dt=0.1)
 Nsim = 500
 dt = env.dt
 

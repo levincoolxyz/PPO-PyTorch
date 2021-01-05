@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import gym
 from gym import wrappers
 import time
@@ -5,6 +7,7 @@ from PPO_clonedAll_ants import PPO, Memory
 from PIL import Image
 import torch
 import numpy as np
+import ants
 
 deviceName = "cuda:0" if torch.cuda.is_available() else "cpu"
 deviceName = "cpu"
@@ -17,7 +20,8 @@ def test():
     Nants = 12
     # Nants = 6
     goalDir = 0
-    env = gym.make(env_name,Nmax=Nants,goalDir=goalDir)
+    # env = gym.make(env_name,Nmax=Nants,goalDir=goalDir)    
+    env = ants.AntsEnv(Nmax=Nants,goalDir=goalDir)
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
     

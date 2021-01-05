@@ -1,14 +1,18 @@
+#!/usr/bin/python3
+
 import gym
 from gym import wrappers
 import time
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import ants
 
 def angle_normalize(x):
     return (((x+np.pi) % (2*np.pi)) - np.pi)
 
-env = gym.make('AntsEnv-v0', Nmax=12, dphi=90)
+# env = gym.make('AntsEnv-v0', Nmax=12, dphi=90)
+env = ants.AntsEnv(Nmax=12, dphi=90)
 Nsim = 500
 dt = env.dt
 
